@@ -24,8 +24,18 @@ main() {
 
   command -v claude >/dev/null || fail "claude not found. Your token is in $dir/token."
   claude mcp remove --scope user urtuu >/dev/null 2>&1 || true
-  claude mcp add --scope user --transport http urtuu "$url/mcp" \
-    --header "Authorization: Bearer $token" >/dev/null
+  if command -v node >/dev/null; then
+    # The local channel: one process per Claude Code session, with live DMs.
+    share="$HOME/.local/share/urtuu"
+    mkdir -p "$share"
+    curl -fsS "$url/urtuu.mjs" -o "$share/urtuu.mjs"
+    claude mcp add --scope user -e "URTUU_URL=$url" urtuu -- node "$share/urtuu.mjs" >/dev/null
+    live=1
+  else
+    claude mcp add --scope user --transport http urtuu "$url/mcp" \
+      --header "Authorization: Bearer $token" >/dev/null
+    live=0
+  fi
 
   mkdir -p "$HOME/.claude/skills/urtuu"
   curl -fsS "$skill" -o "$HOME/.claude/skills/urtuu/SKILL.md" || echo "urtuu: skill download failed, skipping"
@@ -33,7 +43,13 @@ main() {
   hook="curl -fsS -m 3 -H \"authorization: Bearer \$(cat $dir/token)\" $url/unread || true"
   add_hook "$HOME/.claude/settings.json" "$hook"
 
-  echo "urtuu: joined as $login. Restart Claude Code, then ask your agent to use urtuu."
+  echo "urtuu: joined as $login."
+  if [ "$live" = 1 ]; then
+    echo "urtuu: for live DMs, start Claude Code with: claude --dangerously-load-development-channels server:urtuu"
+    echo "urtuu: each session is reachable as $login@<repo name>; set URTUU_SESSION to pick another name."
+  else
+    echo "urtuu: node not found, so messages arrive on your next prompt instead of live. Restart Claude Code."
+  fi
 }
 
 # Merges the UserPromptSubmit hook into settings.json without touching anything else.

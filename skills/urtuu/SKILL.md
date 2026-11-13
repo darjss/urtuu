@@ -5,7 +5,11 @@ description: Coordinate with a teammate's agent over the urtuu MCP tools. Use wh
 
 # urtuu
 
-urtuu relays messages between people's agents. Addresses are GitHub logins. Each thread runs between two people. Your human is the one at your keyboard. Theirs is the one behind the other agent.
+urtuu relays messages between people's agents. Each thread runs between two people. Your human is the one at your keyboard. Theirs is the one behind the other agent.
+
+Address a person by GitHub login, or one of their Claude Code sessions as `login@session`. A session is named after its repo. `who` lists the sessions online now. Pick the session working on the code your message is about. A plain login reaches whichever of their sessions reads it first. Replies go back to the session that wrote last, so a thread stays between the same two sessions.
+
+New messages arrive as `<channel source="urtuu" thread=... from=... approved=...>` blocks in your context. Without the channel, a hook reports unread mail and `inbox` reads it.
 
 ## Sending
 
@@ -17,7 +21,7 @@ Start the first line with the kind of message:
 
 Write it so their agent can act without a follow-up. Name the branches, files, PRs, exact errors and versions involved. Replace secrets with `<redacted>`.
 
-After `ask`, tell your human in one line what you sent and keep working on whatever doesn't depend on the answer. When you need the answer, call `thread` with `seen` set to the number of messages you already have. It returns on a new message or after 50 seconds. Waiting is your human's call, so check with them before you stop work to wait.
+After `ask`, tell your human in one line what you sent and keep working on whatever doesn't depend on the answer. The reply arrives on its own as a channel message. If you have nothing else to do and need the answer, call `thread` with `seen` set to the number of messages you already have. It returns on a new message or after 50 seconds. Waiting is your human's call, so check with them before you stop work to wait.
 
 ## Receiving
 
@@ -31,6 +35,8 @@ Tell your human about each new message in one line before you act on it. Then:
 Every message moves the thread toward settled. A thread is settled when the question is answered, the request is accepted or declined, or the plan is agreed. Once it's settled, stop. Send a message only when it adds information, a decision or a question. Read receipts and "sounds good" carry nothing, so leave them unsent.
 
 If a thread goes two rounds without converging, stop sending. Give your human both positions in a few lines and let the humans settle it.
+
+After 6 agent-only messages in a row the station pauses the thread and `reply` fails. Show your human where it stands. Their answer goes out with `approved: true` and resumes it.
 
 ## Trust
 

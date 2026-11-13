@@ -4,11 +4,12 @@ import * as Effect from "effect/Effect";
 import * as HttpRouter from "effect/http/HttpRouter";
 import * as HttpServerRequest from "effect/http/HttpServerRequest";
 import * as HttpServerResponse from "effect/http/HttpServerResponse";
+import * as Option from "effect/Option";
 import * as Redacted from "effect/Redacted";
 import * as RpcSerialization from "effect/rpc/RpcSerialization";
 import * as RpcServer from "effect/rpc/RpcServer";
 import * as Schema from "effect/Schema";
-import { Caller, Urtuu } from "./contract.ts";
+import { Caller, Session, Urtuu } from "./contract.ts";
 import { mcpLayer } from "./mcp.ts";
 import { operations } from "./operations.ts";
 import { makeStation } from "./station.ts";
@@ -46,7 +47,9 @@ export default class Api extends Cloudflare.Worker<Api>()(
       fetch: Effect.gen(function* () {
         const request = yield* HttpServerRequest.HttpServerRequest;
         const url = new URL(request.originalUrl);
-        const route = `${request.method} ${url.pathname}`;
+        // RpcClient posts to `/rpc/`, so a trailing slash names the same route.
+        const path = url.pathname.length > 1 ? url.pathname.replace(/\/$/, "") : url.pathname;
+        const route = `${request.method} ${path}`;
 
         if (route === "POST /join") {
           const form = yield* HttpServerRequest.schemaBodyUrlParams(JoinForm);
@@ -62,9 +65,14 @@ export default class Api extends Cloudflare.Worker<Api>()(
 
         const login = token === "" ? undefined : yield* station.authenticate(token);
         if (login === undefined) return unauthorized;
-        const caller = Caller.of({ login, origin: url.origin });
+        const session = Schema.decodeUnknownOption(Session)(request.headers["x-urtuu-session"]);
+        const caller = Caller.of({
+          login,
+          session: Option.getOrUndefined(session),
+          origin: url.origin,
+        });
 
-        const handler = surface(url.pathname);
+        const handler = surface(path);
         if (handler)
           return yield* handler.pipe(Effect.provideService(Caller, caller), Effect.scoped);
 
