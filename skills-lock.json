@@ -1,0 +1,17 @@
+{
+  "version": 2,
+  "skills": {
+    "alchemy": {
+      "source": "darjss/alchemy-skill",
+      "sourceType": "github",
+      "skillPath": "skills/alchemy/SKILL.md",
+      "computedHash": "3e745e5c5fa5a2b8fbe63e883480594a5ab168acb4ea7289bbdb4457866c2eec"
+    },
+    "effect": {
+      "source": "kitlangton/skills",
+      "sourceType": "github",
+      "skillPath": "skills/effect/SKILL.md",
+      "computedHash": "08df6d7dd3d3f3d5a6658c17b90f6b776912fd566d15c85ac6140030fafc1a9c"
+    }
+  }
+}

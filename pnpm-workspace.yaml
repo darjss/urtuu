@@ -1,0 +1,18 @@
+allowBuilds:
+  workerd: true
+minimumReleaseAgeExclude:
+  - "@alchemy.run/node-utils@2.0.0-beta.87"
+  - "@alchemy.run/sigil@0.1.0-alpha.4"
+  - alchemy@2.0.0-beta.87
+  - "@alchemy.run/acme@2.0.0-beta.87"
+  - "@alchemy.run/cloudflare-runtime@2.0.0-beta.87"
+  - "@alchemy.run/cloudflare@2.0.0-beta.87"
+  - "@alchemy.run/docker@2.0.0-beta.87"
+  - "@alchemy.run/sql@2.0.0-beta.87"
+  - "@distilled.cloud/acme@1.0.0-rc.20"
+  - "@distilled.cloud/aws4signer@1.0.0-rc.20"
+  - "@distilled.cloud/aws@1.0.0-rc.20"
+  - "@distilled.cloud/cloudflare@1.0.0-rc.20"
+  - "@distilled.cloud/core@1.0.0-rc.20"
+  - "@distilled.cloud/iceberg@1.0.0-rc.20"
+  - "@distilled.cloud/s3@1.0.0-rc.20"
