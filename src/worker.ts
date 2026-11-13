@@ -73,7 +73,7 @@ export default class Api extends Cloudflare.Worker<Api>()(
           if (unread.length === 0) return HttpServerResponse.empty();
           const from = unread.map((row) => `${row.n} from ${row.from_login}`).join(", ");
           return HttpServerResponse.text(
-            `urtuu: ${from}. Call the urtuu inbox tool and answer with reply.\n`,
+            `urtuu: unread ${from}. Read them with the urtuu inbox tool and tell your human; commitments wait for their yes.\n`,
           );
         }
         if (route === "POST /invite") {
