@@ -29,7 +29,8 @@ main() {
     share="$HOME/.local/share/urtuu"
     mkdir -p "$share"
     curl -fsS "$url/urtuu.mjs" -o "$share/urtuu.mjs"
-    claude mcp add --scope user -e "URTUU_URL=$url" urtuu -- node "$share/urtuu.mjs" >/dev/null
+    # The name goes before -e, which would otherwise take it as another variable.
+    claude mcp add --scope user urtuu -e "URTUU_URL=$url" -- node "$share/urtuu.mjs" >/dev/null
     live=1
   else
     claude mcp add --scope user --transport http urtuu "$url/mcp" \
