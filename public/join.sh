@@ -11,7 +11,6 @@ main() {
 
   login=$(gh api user -q .login 2>/dev/null || true)
   [ -n "$login" ] || login=$(git config --get github.user 2>/dev/null || true)
-  [ -n "$login" ] || login=$(git config --get user.name 2>/dev/null || true)
   [ -n "$login" ] || fail "no GitHub login found. Run 'gh auth login' or 'git config --global github.user <login>'."
 
   reply=$(curl -sS --fail-with-body -X POST "$url/join" \
