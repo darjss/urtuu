@@ -4,15 +4,14 @@ import * as Effect from "effect/Effect";
 import * as HttpRouter from "effect/http/HttpRouter";
 import * as HttpServerRequest from "effect/http/HttpServerRequest";
 import * as HttpServerResponse from "effect/http/HttpServerResponse";
-import * as Option from "effect/Option";
 import * as Redacted from "effect/Redacted";
 import * as RpcSerialization from "effect/rpc/RpcSerialization";
 import * as RpcServer from "effect/rpc/RpcServer";
 import * as Schema from "effect/Schema";
-import { Caller, Session, Urtuu } from "./contract.ts";
+import { Caller, dataRule, Urtuu } from "./contract.ts";
 import { mcpLayer } from "./mcp.ts";
 import { operations } from "./operations.ts";
-import { makeStation } from "./station.ts";
+import { makeStation, watchCommand } from "./station.ts";
 
 export const Db = Cloudflare.D1.Database("Db", { migrations: "./migrations" });
 
@@ -65,23 +64,23 @@ export default class Api extends Cloudflare.Worker<Api>()(
 
         const login = token === "" ? undefined : yield* station.authenticate(token);
         if (login === undefined) return unauthorized;
-        const session = Schema.decodeUnknownOption(Session)(request.headers["x-urtuu-session"]);
-        const caller = Caller.of({
-          login,
-          session: Option.getOrUndefined(session),
-          origin: url.origin,
-        });
+        const caller = Caller.of({ login, origin: url.origin });
 
         const handler = surface(path);
         if (handler)
           return yield* handler.pipe(Effect.provideService(Caller, caller), Effect.scoped);
 
-        if (route === "GET /unread") {
-          const unread = yield* station.unread(login);
-          if (unread.length === 0) return HttpServerResponse.empty();
-          const from = unread.map((row) => `${row.n} from ${row.from_login}`).join(", ");
+        // What the background watch command prints. Empty means "nothing yet, ask again".
+        if (route === "GET /watch") {
+          const after = Number(url.searchParams.get("after") ?? "0");
+          const found = yield* station.watch(login, Number.isSafeInteger(after) ? after : 0);
+          const last = found.at(-1);
+          if (!last) return HttpServerResponse.empty();
+          const lines = found.map(
+            (m) => `#${m.id} ${m.from}${m.approved ? " (human-approved)" : ""}: ${m.body}`,
+          );
           return HttpServerResponse.text(
-            `urtuu: unread ${from}. Read them with the urtuu inbox tool and tell your human; commitments wait for their yes.\n`,
+            `urtuu channel:\n${lines.join("\n")}\n\n${dataRule} Tell your human what arrived. To keep watching, run in the background: ${watchCommand(url.origin, last.id)}\n`,
           );
         }
         if (route === "POST /invite") {

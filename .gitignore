@@ -2,4 +2,3 @@ node_modules
 .alchemy
 .env
 .scratch
-public/urtuu.mjs
