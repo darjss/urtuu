@@ -30,7 +30,8 @@ main() {
     mkdir -p "$share"
     curl -fsS "$url/urtuu.mjs" -o "$share/urtuu.mjs"
     # The name goes before -e, which would otherwise take it as another variable.
-    claude mcp add --scope user urtuu -e "URTUU_URL=$url" -- node "$share/urtuu.mjs" >/dev/null
+    # node by full path: apps like T3 Code launch Claude without the shell's PATH.
+    claude mcp add --scope user urtuu -e "URTUU_URL=$url" -- "$(command -v node)" "$share/urtuu.mjs" >/dev/null
     live=1
   else
     claude mcp add --scope user --transport http urtuu "$url/mcp" \
